@@ -106,3 +106,7 @@ See [Flashing Instructions](FLASHING.md) for firmware download, installation and
 ## Hardware documentation
 
 See [Hardware Documentation](HARDWARE.md) for components, GPIO assignments, amplifier and power supply.
+
+## Android application
+
+See [Android Application](ANDROID_APP.md) for BLE connection, threshold configuration and zero calibration.
