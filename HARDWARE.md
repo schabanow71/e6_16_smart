@@ -34,7 +34,7 @@ These values describe the tested prototype configuration, not a complete constru
 
 The OPA333 measurement input is connected across the two terminals of the E6-16 analog meter movement, in parallel with the meter movement.
 
-The exact signal polarity and low-voltage reference connections must be verified against the physical prototype before reproducing the circuit.
+In the tested prototype, the negative terminal of the meter movement is connected to the OPA333 circuit GND. The positive terminal provides the measurement signal through the input filter. Verify polarity and electrical isolation before connecting the amplifier; do not reverse connections experimentally.
 
 ## Power supply and enable control
 
