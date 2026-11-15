@@ -30,6 +30,12 @@ OPA333 is configured as a non-inverting amplifier with an approximate gain of 40
 
 These values describe the tested prototype configuration, not a complete construction schematic.
 
+### Connection to the E6-16 meter movement
+
+The OPA333 measurement input is connected across the two terminals of the E6-16 analog meter movement, in parallel with the meter movement.
+
+The exact signal polarity and low-voltage reference connections must be verified against the physical prototype before reproducing the circuit.
+
 ## Power supply and enable control
 
 - DC/DC converter: TPS63020
