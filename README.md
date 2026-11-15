@@ -98,3 +98,7 @@ Replace `/dev/ttyACM0` with the serial port for your board. The published source
 ## Safety
 
 The E6-16 is a high-voltage insulation tester. Work on its internal circuitry must be performed only by qualified personnel using appropriate safety procedures. Do not connect ESP32-C3 pins directly to high-voltage measurement nodes.
+
+## Firmware installation
+
+See [Flashing Instructions](FLASHING.md) for firmware download, installation and building from source.
