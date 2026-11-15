@@ -24,7 +24,7 @@ OPA333 is configured as a non-inverting amplifier with an approximate gain of 40
 
 - Feedback resistor: 39 kOhm
 - Gain-setting resistor: 1 kOhm
-- Input filter capacitors: 1 uF + 220 nF
+- Input low-pass RC filter: 10 kOhm series resistor; 1 uF and 220 nF capacitors in parallel to GND (total 1.22 uF)
 - Amplifier supply: 3.3 V
 - Amplifier output: ESP32-C3 GPIO0 (ADC)
 
