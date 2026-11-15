@@ -1,0 +1,240 @@
+
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Е6-16</title>
+<style>
+:root{font-family:system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#121820;color:#e8edf4}
+.wrap{max-width:760px;margin:auto;padding:24px 18px}
+.status{height:56px;display:flex;align-items:center;justify-content:center}
+.spinner{width:28px;height:28px;border:3px solid #52657b;border-top-color:#50b9ff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.status-icon{font-size:30px}
+.note{text-align:center;color:#9daabc;font-size:13px;margin:8px 0 28px}
+.panel{background:#202a36;border:1px solid #364352;border-radius:18px;padding:28px 18px;min-height:230px}
+.screen{display:none}
+.screen.visible{display:block}
+.title{text-align:center;font-size:17px;margin:0 0 35px}
+.axis{display:flex;justify-content:space-between;font-size:13px;margin-bottom:36px}
+.track-zone{position:relative;margin:0 15px;height:105px;touch-action:none;user-select:none}
+.track{position:absolute;top:24px;width:100%;height:28px;display:flex;border-radius:6px;overflow:hidden}
+.green{background:#1baf59}
+.red{background:#e04444}
+.handle{position:absolute;top:14px;width:18px;height:48px;transform:translateX(-50%);border-radius:5px;background:linear-gradient(90deg,#a3afbe,#e8edf3 45%,#778597);border:2px solid #293341;touch-action:none}
+.bubble{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:#f2f6fa;color:#111827;padding:5px 9px;border-radius:7px;white-space:nowrap;font-weight:bold;font-size:13px}
+.ticks{position:absolute;top:68px;width:100%;height:24px}
+.tick{position:absolute;transform:translateX(-50%);font-size:11px;color:#b4c0ce}
+.action-row{display:flex;justify-content:center;margin-top:20px}
+button{border:1px solid #52657b;background:#344557;color:white;border-radius:12px;min-height:54px;padding:12px 22px;font-size:16px;cursor:pointer}
+.record{width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.symbol{font-size:32px;line-height:1}
+.record-dot{width:23px;height:23px;background:#f04444;border-radius:50%}
+.success{color:#36d579}
+.error{color:#ff5555;animation:blink .25s 6}
+@keyframes blink{50%{opacity:0}}
+.toast{position:fixed;left:50%;top:25%;transform:translateX(-50%);background:#39485a;border:1px solid #728197;border-radius:12px;padding:16px;max-width:85%;z-index:20;touch-action:none;display:none;box-shadow:0 5px 18px #0008}
+</style>
+</head>
+<body>
+<main class="wrap">
+
+
+<section class="panel">
+
+<div class="screen" id="zeroScreen">
+<h2 class="title">Встановіть нуль на шкалі Е6-16</h2>
+<div class="action-row">
+<button id="zeroButton">Запис нуля</button>
+</div>
+</div>
+
+<div class="screen visible" id="thresholdScreen">
+<div class="axis"><span>200 МОм</span><span>0 МОм</span></div>
+<div class="track-zone" id="trackZone">
+<div class="track">
+<div class="green" id="green"></div>
+<div class="red" id="red"></div>
+</div>
+<div class="handle" id="handle" role="slider" tabindex="0" aria-label="Поріг"></div>
+<div class="ticks" id="ticks"></div>
+</div>
+<div class="action-row">
+<button class="record" id="save"><span class="record-dot"></span></button>
+</div>
+</div>
+
+</section>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+let position=8,dragging=false,pending=null;
+const handle=$('handle');
+
+for(let p=0;p<=20;p+=5){
+ const t=document.createElement('span');
+ t.className='tick';
+ t.style.left=p*5+'%';
+ t.textContent=200-p*10;
+ $('ticks').appendChild(t);
+}
+
+function draw(){
+ const pct=position*5;
+ $('green').style.width=pct+'%';
+ $('red').style.width=(100-pct)+'%';
+ handle.style.left=pct+'%';
+ handle.setAttribute('aria-valuemin','0');
+ handle.setAttribute('aria-valuemax','200');
+ handle.setAttribute('aria-valuenow',String(200-position*10));
+ let bubble=handle.querySelector('.bubble');
+ if(dragging){
+  if(!bubble){
+   bubble=document.createElement('div');
+   bubble.className='bubble';
+   handle.appendChild(bubble);
+  }
+  bubble.textContent=(200-position*10)+' МОм';
+ }else if(bubble)bubble.remove();
+}
+
+function move(e){
+ const rect=$('trackZone').getBoundingClientRect();
+ const next=Math.max(0,Math.min(20,Math.round((e.clientX-rect.left)/rect.width*20)));
+ if(next!==position){
+  position=next;
+  setSymbol($('save'),'record');
+ }
+ draw();
+}
+handle.addEventListener('pointerdown',e=>{
+ e.preventDefault();dragging=true;
+ handle.setPointerCapture(e.pointerId);move(e);
+});
+handle.addEventListener('pointermove',e=>{if(dragging)move(e)});
+function end(){dragging=false;draw()}
+handle.addEventListener('pointerup',end);
+handle.addEventListener('pointercancel',end);
+handle.addEventListener('lostpointercapture',end);
+handle.addEventListener('keydown',e=>{
+ if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;
+ e.preventDefault();
+ const next=Math.max(0,Math.min(20,position+(e.key==='ArrowRight'?1:-1)));
+ if(next!==position){
+  position=next;
+  setSymbol($('save'),'record');
+ }
+ dragging=true;draw();
+});
+handle.addEventListener('keyup',()=>{dragging=false;draw()});
+handle.addEventListener('blur',end);
+
+function setSymbol(button,type){
+ button.innerHTML=type==='success'
+  ? '<span class="symbol success">✓</span>'
+  : type==='error'
+  ? '<span class="symbol error">!</span>'
+  : '<span class="record-dot"></span>';
+}
+
+function showError(message){
+ const toast=$('toast');
+ toast.textContent=message;
+ toast.style.display='block';
+ toast.style.left='50%';
+ toast.style.top='25%';
+ toast.style.transform='translateX(-50%)';
+ let startX,startY,left,top,moved=false;
+ toast.onpointerdown=e=>{
+  startX=e.clientX;startY=e.clientY;
+  const r=toast.getBoundingClientRect();
+  left=r.left;top=r.top;moved=false;
+  toast.setPointerCapture(e.pointerId);
+ };
+ toast.onpointermove=e=>{
+  if(!toast.hasPointerCapture(e.pointerId))return;
+  const dx=e.clientX-startX,dy=e.clientY-startY;
+  if(Math.abs(dx)+Math.abs(dy)>5)moved=true;
+  if(moved){
+   toast.style.transform='none';
+   toast.style.left=Math.max(0,Math.min(innerWidth-toast.offsetWidth,left+dx))+'px';
+   toast.style.top=Math.max(0,Math.min(innerHeight-toast.offsetHeight,top+dy))+'px';
+  }
+ };
+ toast.onpointerup=()=>{if(!moved)toast.style.display='none'};
+}
+
+$('zeroButton').onclick=()=>{
+ if(pending)return;
+ pending='zero';
+ $('zeroButton').disabled=true;
+ if(window.Android&&window.Android.saveZero){
+  window.Android.saveZero();
+ }else{
+  window.zeroError('Зв’язок із приладом недоступний.');
+ }
+};
+
+$('save').onclick=()=>{
+ if(pending)return;
+ pending='threshold';
+ $('save').disabled=true;
+ const value=200-position*10;
+ window.thresholdSuccess();
+};
+
+window.zeroSuccess=()=>{
+ if(pending!=='zero')return;
+ pending=null;
+ setSymbol($('zeroButton'),'success');
+ setTimeout(()=>{
+  $('zeroScreen').classList.remove('visible');
+  $('thresholdScreen').classList.add('visible');
+  draw();
+ },1000);
+};
+window.zeroError=message=>{
+ if(pending!=='zero')return;
+ pending=null;
+ $('zeroButton').disabled=false;
+ setSymbol($('zeroButton'),'error');
+ showError(message);
+ setTimeout(()=>{$('zeroButton').textContent='Запис нуля'},1000);
+};
+window.thresholdSuccess=()=>{
+ if(pending!=='threshold')return;
+ pending=null;
+ $('save').disabled=false;
+ setSymbol($('save'),'success');
+};
+window.thresholdError=message=>{
+ if(pending!=='threshold')return;
+ pending=null;
+ $('save').disabled=false;
+ setSymbol($('save'),'error');
+ showError(message);
+ setTimeout(()=>setSymbol($('save'),'record'),1000);
+};
+window.setBleThreshold=value=>{
+ if(!Number.isInteger(value)||value<0||value>200||value%10)return;
+ position=(200-value)/10;draw();
+};
+window.setBleState=state=>{
+ $('bleHint').style.display=state==='connected'?'none':'';
+ $('status').innerHTML=state==='connected'
+  ? '<span class="status-icon success">✓</span>'
+  : state==='error'
+  ? '<span class="status-icon error">!</span>'
+  : '<div class="spinner"></div>';
+};
+draw();
+})();
+</script>
+</body>
+</html>
