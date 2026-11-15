@@ -102,3 +102,7 @@ The E6-16 is a high-voltage insulation tester. Work on its internal circuitry mu
 ## Firmware installation
 
 See [Flashing Instructions](FLASHING.md) for firmware download, installation and building from source.
+
+## Hardware documentation
+
+See [Hardware Documentation](HARDWARE.md) for components, GPIO assignments, amplifier and power supply.
