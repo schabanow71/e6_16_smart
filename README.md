@@ -110,3 +110,5 @@ See [Hardware Documentation](HARDWARE.md) for components, GPIO assignments, ampl
 ## Android application
 
 See [Android Application](ANDROID_APP.md) for BLE connection, threshold configuration and zero calibration.
+
+**[Download Android APK v1.0](https://github.com/schabanow71/e6_16_smart/releases/download/v0.2.0-beta2/E6-16_Smart_v1.0.apk)** (Android 8.0+)
